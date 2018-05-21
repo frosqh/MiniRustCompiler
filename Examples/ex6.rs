@@ -1,5 +1,6 @@
 fn main(){
-	let i = 9+6;
-	print!("Le resultat est : ",i);
+    let v = vec![vec![1,2],vec![5,63]];
+    print!(v[1][1]);
+    print!(v[0][1]);
 }
 

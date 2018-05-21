@@ -217,7 +217,7 @@ public class TDS {
                 } else {
                     Scope elseBlock;
                     if ((elseBlock = currentScope.isInElse())!=null){
-                        if (functionPartiallyReturned.get(name).contains(Integer.parseInt(elseBlock.getName().replace("if","")))){
+                        if (functionPartiallyReturned.get(name).contains(Integer.parseInt(elseBlock.getName().replace("else","")))){
                             functionReturned.replace(name, true);
                         }
                     } else {
@@ -305,6 +305,7 @@ public class TDS {
                 keywords.add("RES");
                 keywords.add("print");
                 keywords.add("BLOCK");
+                keywords.add("input");
                 keywords.add("len");
                 for (Tree j : t.getAncestors()){
                     String node = j.getText();

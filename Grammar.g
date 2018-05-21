@@ -17,6 +17,7 @@ tokens {
 	ANOBLOCK;
 	RES;
 }
+
 @members{
 boolean mainFound = false;
 }
@@ -66,7 +67,6 @@ instruct :
 | 'let' 'mut'? dotIDF (':' type)? '=' bigExpr ';' instruct?-> ^('let' 'mut'? (type)? ^('=' dotIDF bigExpr))  instruct?
 | 'while' expr block instruct?-> ^('while' expr block) instruct?
 | 'return' expr? ';' instruct?-> ^('return' expr?) instruct?
-| 'loop' block instruct?-> ^('loop' block) instruct?
 | 'break' ';' instruct?-> 'break' instruct?
 | ifExpr instruct?
 ;
@@ -110,7 +110,8 @@ atom : INT
 | '('expr')'-> expr; 
 
 expr : 'vec' '!' '[' expr(',' expr)* ']' -> ^('vec' expr*)
-| 'print' '!' '(' exS  (',' exS)* ')' -> ^('print' exS*)
+|'print' '!' '(' exS  (',' exS)* ')' -> ^('print' exS*)
+|'input' '(' STRING ')' -> ^('input' STRING)
 |	binExpr1;
 
 exS : expr
@@ -145,7 +146,8 @@ bigunExpr : (UNAIRE^|EPERLU^)? bigdotExpr;
 
 bigExpr 
 :	'vec' '!' '[' expr (',' expr)*']' -> ^('vec' expr*)
-|' print' '!' '(' exS (',' exS)* ')' -> ^('print' exS*)
+|   'print' '!' '(' exS (',' exS)* ')' -> ^('print' exS*)
+|'input' '(' STRING ')' -> ^('input' STRING)
 |	bigbinExpr1;
 
 bigatom : INT
@@ -194,7 +196,7 @@ IDF 			: ('a'..'z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
 INT 			: '0'..'9'+
 ;
 
-
+WS  			: ( ' '| '\t' | '\r' | '\n' ) {$channel=HIDDEN;};
 
 STRING	
 : '"' ~('\r' | '\n' | '"')* '"'
@@ -204,4 +206,3 @@ COMMENT			: '/*' ( options {greedy=false;} : . )* '*/' {$channel=HIDDEN;};
 
 ATTRIBUTE : '#' ( options {greedy=false;} : .)* ('\n'|'\t') {$channel=HIDDEN;}; 
 
-WS  			: ( ' ' | '\t' | '\r' | '\n' ) {$channel=HIDDEN;};

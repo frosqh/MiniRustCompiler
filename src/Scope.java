@@ -211,7 +211,7 @@ public class Scope {
             ////////// Counting children for vec declaration
             ArrayList<Integer> veCount = new ArrayList<>();
             BaseTree child = childrens.get(1);
-            while (child.getText().equals("vec")){
+            while (child!=null && child.getText().equals("vec")){
                 vecChildCount = child.getChildCount();
                 veCount.add(vecChildCount);
                 if (vecChildCount > 0){
@@ -296,6 +296,10 @@ public class Scope {
         if (name.equals("BLOCK")){
             child = child.getChild(0);
             return getType(child);
+        }
+
+        if (name.equals("input")){
+            return new Type("i32");
         }
 
         if (name.equals(".")){
@@ -605,6 +609,9 @@ public class Scope {
                 if (ll.size() >child.getChildCount()) {
                     String l = tempscope.getTable().get(ll.get(child.getChildCount())).get(0);
                     if (l != null && l.equals("param")) {
+                        BaseTree ances = (BaseTree) child.getAncestors().get(child.getAncestors().size()-1);
+                        if (child.getChildCount() < 1)
+                            throw new SemanticException("Not enough parameters for function " + name, ances.getLine(), ances.getCharPositionInLine());
                         throw new SemanticException("Not enough parameters for function " + name, child.getChild(child.getChildCount() - 1).getLine(), child.getChild(child.getChildCount() - 1).getCharPositionInLine());
                     }
                 }
@@ -616,13 +623,13 @@ public class Scope {
                 checkType(typeT,child.getLine(), child.getCharPositionInLine());
             return typeT;
         }
-        System.out.println(child.getText());
         if (child.getText().matches("\"(\\S| )*\"")){
             return new Type("String");
         }
 
-        if (!child.getText().equals("CALLFUN"))
-            throw new SemanticException("Cannot find value `"+name+"` in this scope",child.getLine(), child.getCharPositionInLine());
+        if (!child.getText().equals("CALLFUN") && !child.getText().equals("input")) {
+            throw new SemanticException("Cannot find value `" + name + "` in this scope", child.getLine(), child.getCharPositionInLine());
+        }
         return null;
     }
 
