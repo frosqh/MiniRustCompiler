@@ -78,6 +78,15 @@ public class Scope {
         ancestor = anc;
         name = string;
     }
+    public ArrayList<Scope> getScopeList() {
+        ArrayList<Scope> liste = new ArrayList<Scope> ();
+        for (Map.Entry<String,Scope> e : secondTable.entrySet()) {
+            liste.add(e.getValue());
+        }
+        return liste;
+    }
+
+
 
     /**
      * @return Scope's offset
@@ -801,9 +810,10 @@ public class Scope {
                 return 1;
             } else {
                 if (type.startsWith("vec ")){
-                    int a =vecCoun.get(0);
-                    vecCoun.remove(vecCoun.get(0));
-                    return a*getDeplacement(type.split(" ",2)[1], vecCoun);
+                    //int a =vecCoun.get(0);
+                    //vecCoun.remove(vecCoun.get(0));
+                    //return a*getDeplacement(type.split(" ",2)[1], vecCoun);
+                    return 2;
                 } else {
                     return 2;
                 }

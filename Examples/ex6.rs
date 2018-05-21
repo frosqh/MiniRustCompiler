@@ -1,7 +1,8 @@
 fn main(){
-	print!(56-96);
-    print!(2-4);
-    print!(false);
-    print!(9>6);
-    print!(6>9);
+	let mut i=2;
+	if (i<4){
+		let i = 9;
+		print!(i);
+	}
+	print!(i);
 }
