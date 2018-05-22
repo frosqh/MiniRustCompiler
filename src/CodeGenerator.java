@@ -71,7 +71,7 @@ public class CodeGenerator{
      * Allows to know if there is a need to update R5
      * @see #generatePrint(BaseTree)
      */
-    private boolean isR5Done = false;
+    private int isR5Done = 0;
 
     /**
      * Array of all possible operations
@@ -225,11 +225,7 @@ public class CodeGenerator{
      * @return Assembly line updating R5 if needed, "" otherwise
      */
     private String genR5(int mode){
-        if (isPrint)
-            if (!isR5Done)
-                return "LDW R5,#"+mode+"\n\n";
-            else
-                isR5Done=true;
+        if (isPrint) return "LDW R5,#" + mode + "\n\n";
         return "";
     }
 
@@ -312,7 +308,6 @@ public class CodeGenerator{
         isPrint=true;
         String s = "";
         for (BaseTree t2 : (List<BaseTree>) t.getChildren()){
-            isR5Done = false;
             s +=  genExpr(t2) +
                     "MPC WR \n\n" + "ADQ 6,WR\n\n" + // Calling the print subroutine
                     "JMP #print_-$-2\n\n";
@@ -449,14 +444,13 @@ public class CodeGenerator{
         ArrayList<Integer> array= new ArrayList<>();;
         BaseTree t1 = (BaseTree) t.getChild(0);
         BaseTree t2 = (BaseTree) t.getChild(1);
-        System.out.println(t.getText()+t1.getText()+","+t2.getText()+"]");
         if (t1.getText().equals("[")){
             array = getVecDepl(t1,level+1);
             d = array.get(0);
             i = array.get(1);
             toAdd.addAll(array.subList(2,array.size()));
         } else {
-            System.out.println(t1.getText());
+            if (t1.getText().equals("UNISTAR")) t1 = (BaseTree) t1.getChild(0);
             d = getDeplacement(t1.getText());
             try {
                 ArrayList<String> a = sc.find(t1.getText());
@@ -472,7 +466,6 @@ public class CodeGenerator{
         res.add(d);
         res.add(i+dec*Integer.parseInt(t2.getText()));
         res.addAll(toAdd);
-        System.out.println(res);
         return res;
     }
 
@@ -561,6 +554,7 @@ public class CodeGenerator{
                 scounter++;
                 return "STR"+scounter+" string "+s+"\n\n"+genR5(2)+"LDW R0, #STR"+scounter+"\n\n";
             }
+            System.out.println(s);
             return "LDW R0, (BP)"+getDeplacement(s)+"\n\n"+genR5(getType(s));
         }
     }
@@ -591,9 +585,10 @@ public class CodeGenerator{
                 code += genExpr(t);
                 code += "STW R0, -(SP)\n\n";
                 String s = t.getText();
-                if (!isInteger(s) && !s.equals("true") && !s.equals("false")) {
+                System.out.println(s);
+                if (!isInteger(s) && !s.equals("true") && !s.equals("false") &&!s.equals("&")) {
                     try {
-                        if (sc.find(t.getText()).get(1).equals("i32")) {
+                        if (sc.find(s).get(1).equals("i32")) {
                             code += "ADQ -2,SP\n\n";
                         }
                     } catch (Exception e) {
@@ -795,6 +790,17 @@ public class CodeGenerator{
             case "return":
                 codeBuilder.append(genExpr((BaseTree) t.getChild(0)));
                 codeBuilder.append(goBack(sc.getName(),false));
+                try {
+
+                    String type = sc.getFromAncestor(sc.getName()).get(1);
+                    int mode;
+                    if (type.equals("bool")) mode = 1; else mode= 0;
+                    isPrint=true;
+                    codeBuilder.append((genR5(mode)));
+                    isPrint=false;
+                } catch (SemanticException e) {
+                    e.printStackTrace();
+                }
                 codeBuilder.append("LDW WR, (SP)+\n\n");
                 codeBuilder.append("JEA (WR)\n\n");
 
@@ -880,7 +886,7 @@ public class CodeGenerator{
             l = sc.find(text);
             if (l.get(0).equals("param")) {
                 String type = l.get(1);
-                int dep = 2+Integer.valueOf(l.get(2));
+                int dep = Integer.valueOf(l.get(2));
                 if (type.equals("i32")){
                     dep+=4;
                 } else {
@@ -901,8 +907,8 @@ public class CodeGenerator{
             }
             return Integer.valueOf(l.get(2))+d;
         } catch (Exception e) {
-            System.out.println(text);
             System.err.println("Error ancestor");
+            e.printStackTrace();
             System.exit(-1);
         }
         return "Should not happen".hashCode();
@@ -973,7 +979,8 @@ public class CodeGenerator{
                 }
             }
         }
-        d+=dep+2;
+        if (!sc.getOrigin().equals("function"))
+            d+=dep+2;
         codeBuilder.append("ADQ -" + dep + ", SP\n\n");
         codeBuilder.append("LDW BP, SP\n\n");
         return codeBuilder.toString();

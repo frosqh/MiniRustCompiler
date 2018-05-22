@@ -362,16 +362,20 @@ public class Scope {
                         return new Type(varType.getName().split(" ",i+1)[i]);
                     }
                     int val = Integer.parseInt(child.getChild(1).getText());
+                    if (var.equals("UNISTAR")){
+                        var = chi.getChild(0).getChild(0).getText();
+                    }
                     if (isIn(var)){
-                        if (val > Integer.parseInt(table.get(var).get(3+i))){
+                        if (!table.get(var).get(0).equals("param") &&  val > Integer.parseInt(table.get(var).get(3+i))){
                             throw new SemanticException("Index out of bounds ("+val+" > "+Integer.parseInt(table.get(var).get(3+i))+")" ,child.getChild(1).getLine(),child.getChild(1).getCharPositionInLine());
                         }
                     } else {
                         if (isInAncestor(var)){
-                            if (val > Integer.parseInt(getFromAncestor(var).get(3+i))){
+                            if (!table.get(var).get(0).equals("param") && val > Integer.parseInt(getFromAncestor(var).get(3+i))){
                                 throw new SemanticException("Index out of bounds ("+val+" > "+Integer.parseInt(getFromAncestor(var).get(3+i))+")" ,child.getChild(1).getLine(),child.getChild(1).getCharPositionInLine());
                             }
                         } else {
+
                             throw new SemanticException("Cannot find value `"+var+"` in this scope",child.getChild(0).getLine(), child.getChild(0).getCharPositionInLine());
                         }
                     }
@@ -482,6 +486,7 @@ public class Scope {
                             throw new SemanticException("Mismatched types : expected " + tempType + ", found " + type,child.getChild(1).getLine(),child.getChild(1).getCharPositionInLine());
                         }
                     }
+
                     throw new SemanticException("Cannot find value `"+var+"` in this scope",child.getChild(0).getLine(), child.getChild(0).getCharPositionInLine());
                 }
                 if (name.equals("&")){
