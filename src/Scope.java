@@ -61,6 +61,7 @@ public class Scope {
      * @see Scope#addScopeNotInner(String, Scope)
      */
     private LinkedHashMap<String, Scope> secondTable;
+    private int deplacementparam = 0;
 
     /**
      * @param id Scope's origin
@@ -375,13 +376,12 @@ public class Scope {
                         var = chi.getChild(0).getChild(0).getText();
                     }
                     if (isIn(var)){
-                        System.out.println(table.get(var));
                         if (!isFromPointer&&!table.get(var).get(4).equals("-1") &&  val > Integer.parseInt(table.get(var).get(3+i))){
                             throw new SemanticException("Index out of bounds ("+val+" > "+Integer.parseInt(table.get(var).get(3+i))+")" ,child.getChild(1).getLine(),child.getChild(1).getCharPositionInLine());
                         }
                     } else {
                         if (isInAncestor(var)){
-                            if (!isFromPointer&&!table.get(var).get(4).equals("-1") && val > Integer.parseInt(getFromAncestor(var).get(3+i))){
+                            if (!isFromPointer&&!getFromAncestor(var).get(4).equals("-1") && val > Integer.parseInt(getFromAncestor(var).get(3+i))){
                                 throw new SemanticException("Index out of bounds ("+val+" > "+Integer.parseInt(getFromAncestor(var).get(3+i))+")" ,child.getChild(1).getLine(),child.getChild(1).getCharPositionInLine());
                             }
                         } else {
@@ -662,8 +662,8 @@ public class Scope {
                 throw new SemanticException("Cannot pass vec as parameter, please use pointer", child.getChild(0).getLine(), child.getChild(0).getCharPositionInLine());
             }
         }
-        int deplacement = this.deplacement;
-        this.deplacement += getDeplacement(type.getName(), new ArrayList<>());
+        int deplacement = this.deplacementparam;
+        this.deplacementparam += getDeplacement(type.getName(), new ArrayList<>());
         ArrayList<String> param = new ArrayList<>();
         param.add(s);
         param.add(type.getName());
@@ -834,7 +834,7 @@ public class Scope {
      */
     private int getDeplacement(String type,ArrayList<Integer> vecCoun){
         if (type.equals("i32")){
-            return 4;
+            return 2;
         } else {
             if (type.equals("bool")){
                 return 2;

@@ -817,7 +817,7 @@ public class CodeGenerator{
             if (!sc.getTable().get(i).get(0).equals("function") && !sc.getTable().get(i).get(0).equals("param")) {
                 String type = sc.getTable().get(i).get(1);
                 if (type.equals("i32")) {
-                    dep += 4;
+                    dep += 2;
                 } else {
                     if (type.equals("bool")) {
                         dep += 2;
@@ -955,7 +955,7 @@ public class CodeGenerator{
             if (!sc.getTable().get(i).get(0).equals("function") && !sc.getTable().get(i).get(0).equals("param")) {
                 String type = sc.getTable().get(i).get(1);
                 if (type.equals("i32")) {
-                    dep += 4;
+                    dep += 2;
                 } else {
                     if (type.equals("bool")) {
                         dep += 2;
@@ -973,7 +973,6 @@ public class CodeGenerator{
                 }
             }
         }
-        System.out.println(sc.getName() + d);
         d += dep + 2;
         codeBuilder.append("ADQ -" + dep + ", SP\n\n");
         codeBuilder.append("LDW BP, SP\n\n");
@@ -989,10 +988,18 @@ public class CodeGenerator{
         Tree t1 = t.getChild(0);
         Tree t2 = t.getChild(1);
         String expr = genExpr((BaseTree) t2);
-        int deplacement = 0;
-        deplacement = getDeplacement(t1.getText());
         codeBuilder.append(expr);
-        codeBuilder.append("STW R0, (BP)"+deplacement+"\n\n");
+        int deplacement = 0;
+        if (t1.getText().equals("[")){
+            ArrayList<Integer> array = getVecDepl((BaseTree) t1,0);
+            int d = array.get(0);
+            int index = array.get(1);
+            codeBuilder.append("LDW R1, (BP)"+d+"\n\n");
+            codeBuilder.append("STW R0, (R1)"+2*index+"\n\n");
+        } else {
+            deplacement = getDeplacement(t1.getText());
+            codeBuilder.append("STW R0, (BP)" + deplacement + "\n\n");
+        }
         return codeBuilder.toString();
 
     }
