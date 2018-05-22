@@ -370,17 +370,6 @@ public class CodeGenerator{
     }
 
     /**
-     * Generate assembly call for a new vec node
-     * @param t Corresponding node
-     * @return Assembly code
-     */
-    private String genVec(BaseTree t) {
-        //TODO Generate vector in heap
-        return "";
-    }
-
-
-    /**
      * Generate code corresponding to the main function.
      * It is separated of the former generateFun for two main reasons :
      *  - It needs a bit more of code at start
@@ -443,17 +432,17 @@ public class CodeGenerator{
         return codeBuilder.toString();
     }
 
-    private ArrayList<Integer> getVecDepl(BaseTree t, int level){
+    private ArrayList<Integer> getVecDepl(BaseTree t, int level, StringBuilder s){
         int d;
         int i = 0;
         int dec=1;
         ArrayList<Integer> toAdd = new ArrayList<>();
         ArrayList<Integer> res = new ArrayList<>();
-        ArrayList<Integer> array= new ArrayList<>();;
+        ArrayList<Integer> array;
         BaseTree t1 = (BaseTree) t.getChild(0);
         BaseTree t2 = (BaseTree) t.getChild(1);
         if (t1.getText().equals("[")){
-            array = getVecDepl(t1,level+1);
+            array = getVecDepl(t1,level+1, s);
             d = array.get(0);
             i = array.get(1);
             toAdd.addAll(array.subList(2,array.size()));
@@ -462,8 +451,8 @@ public class CodeGenerator{
             d = getDeplacement(t1.getText());
             try {
                 ArrayList<String> a = sc.find(t1.getText());
-                for (String s : a.subList(4,a.size())){
-                    toAdd.add(Integer.parseInt(s));
+                for (String s2 : a.subList(4,a.size())){
+                    toAdd.add(Integer.parseInt(s2)); //We get size
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -478,14 +467,15 @@ public class CodeGenerator{
     }
 
     private String callVec(BaseTree t) {
-        String s = "";
-        ArrayList<Integer> array = getVecDepl(t,0);
+        StringBuilder s = new StringBuilder();
+        s.append("LDQ NIL, R9\n\n");
+        ArrayList<Integer> array = getVecDepl(t,0, s);
         int d = array.get(0);
         int index = array.get(1);
-        s+="LDW R0, (BP)"+d+"\n\n // On appelle notre tableau >< \n\n"+
-                "LDW R0,(R0)"+index*2+"\n\n";
-        s+=genR5(0);
-        return s;
+        s.append("LDW R0, (BP)"+d+"\n\n"+
+                "LDW R0,(R0)"+index*2+"\n\n");
+        s.append(genR5(0));
+        return s.toString();
     }
 
 
@@ -1002,10 +992,10 @@ public class CodeGenerator{
         codeBuilder.append(expr);
         int deplacement = 0;
         if (t1.getText().equals("[")){
-            ArrayList<Integer> array = getVecDepl((BaseTree) t1,0);
-            int d = array.get(0);
-            int index = array.get(1);
+            codeBuilder.append("LDQ NIL, R9 \n\n");
+            int d = getVecDepl((BaseTree) t1,0,codeBuilder);
             codeBuilder.append("LDW R1, (BP)"+d+"\n\n");
+            //Mettre dans R1 le R1 plus décalage dans R9;
             codeBuilder.append("STW R0, (R1)"+2*index+"\n\n");
         } else {
             deplacement = getDeplacement(t1.getText());
