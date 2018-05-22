@@ -791,8 +791,11 @@ public class CodeGenerator{
                 codeBuilder.append(genExpr((BaseTree) t.getChild(0)));
                 codeBuilder.append(goBack(sc.getName(),false));
                 try {
-
-                    String type = sc.getFromAncestor(sc.getName()).get(1);
+                    Scope sc2 = sc;
+                    while (!sc2.getOrigin().equals("function")){
+                        sc2 =sc2.getAncestor();
+                    }
+                    String type = sc2.getFromAncestor(sc2.getName()).get(1);
                     int mode;
                     if (type.equals("bool")) mode = 1; else mode= 0;
                     isPrint=true;
