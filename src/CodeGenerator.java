@@ -585,16 +585,6 @@ public class CodeGenerator{
                 code += genExpr(t);
                 code += "STW R0, -(SP)\n\n";
                 String s = t.getText();
-                System.out.println(s);
-                if (!isInteger(s) && !s.equals("true") && !s.equals("false") &&!s.equals("&")) {
-                    try {
-                        if (sc.find(s).get(1).equals("i32")) {
-                            code += "ADQ -2,SP\n\n";
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
             }
         }
         code+="LDW R0, #"+v+"_\n\n";
@@ -732,7 +722,8 @@ public class CodeGenerator{
     private String generateAddress(BaseTree t2){
         BaseTree Value = (BaseTree) t2.getChild(0);
 
-        return  "LDW R1,BP \n\n"+ "LDW R0,#"+ String.valueOf(getDeplacement(Value.getText())) + " \n\n"+ "ADD R1,R0,R0 \n\n";
+
+        return  "LDW R1,BP \n\n"+ "LDW R0,#"+ String.valueOf(getDeplacement(Value.getText())) + " \n\n"+ "ADD R1,R0,R0 \n\n"+genR5(0);
     }
 
     private String generateUniSub(BaseTree t2){
@@ -789,7 +780,7 @@ public class CodeGenerator{
                 break;
             case "return":
                 codeBuilder.append(genExpr((BaseTree) t.getChild(0)));
-                codeBuilder.append(goBack(sc.getName(),false));
+                codeBuilder.append(goBack(sc.getName(),true));
                 try {
                     Scope sc2 = sc;
                     while (!sc2.getOrigin().equals("function")){
@@ -891,7 +882,7 @@ public class CodeGenerator{
                 String type = l.get(1);
                 int dep = Integer.valueOf(l.get(2));
                 if (type.equals("i32")){
-                    dep+=4;
+                    dep+=2;
                 } else {
                     if (type.equals("bool")){
                         dep+=2;
@@ -906,9 +897,9 @@ public class CodeGenerator{
                         }
                     }
                 }
-                return dep;
+                return dep+d+2;
             }
-            return Integer.valueOf(l.get(2))+d;
+            return Integer.valueOf(l.get(2))+d-2;
         } catch (Exception e) {
             System.err.println("Error ancestor");
             e.printStackTrace();
@@ -982,8 +973,8 @@ public class CodeGenerator{
                 }
             }
         }
-        if (!sc.getOrigin().equals("function"))
-            d+=dep+2;
+        System.out.println(sc.getName() + d);
+        d += dep + 2;
         codeBuilder.append("ADQ -" + dep + ", SP\n\n");
         codeBuilder.append("LDW BP, SP\n\n");
         return codeBuilder.toString();

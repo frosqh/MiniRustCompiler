@@ -191,7 +191,10 @@ public class Scope {
                     System.out.println("Warning : \"Var name surcharged : " + name + "\" at " + children.get(0).getLine() + ":" + children.get(0).getCharPositionInLine());
                 }
             }
-
+            boolean isFromPointer = false;
+            if (childrens.get(1).getText().equals("UNISTAR")){
+                isFromPointer = true;
+            }
             Type tempType = getType(childrens.get(1));
             if (type != null) {
                 if (type.getName().startsWith("vec ")){
@@ -241,6 +244,10 @@ public class Scope {
             param.add(String.valueOf(deplacement));
             param.add(String.valueOf(isMut));
             /// adding vecChildCount to TDS
+            if (type.getName().startsWith("&vec ") || isFromPointer){
+                param.add(String.valueOf("-1"));
+            }
+
             if(type.getName().startsWith("vec ")) {
                 for (int i : veCount){
                     param.add(String.valueOf(i-1));
@@ -362,16 +369,19 @@ public class Scope {
                         return new Type(varType.getName().split(" ",i+1)[i]);
                     }
                     int val = Integer.parseInt(child.getChild(1).getText());
+                    boolean isFromPointer = false;
                     if (var.equals("UNISTAR")){
+                        isFromPointer=true;
                         var = chi.getChild(0).getChild(0).getText();
                     }
                     if (isIn(var)){
-                        if (!table.get(var).get(0).equals("param") &&  val > Integer.parseInt(table.get(var).get(3+i))){
+                        System.out.println(table.get(var));
+                        if (!isFromPointer&&!table.get(var).get(4).equals("-1") &&  val > Integer.parseInt(table.get(var).get(3+i))){
                             throw new SemanticException("Index out of bounds ("+val+" > "+Integer.parseInt(table.get(var).get(3+i))+")" ,child.getChild(1).getLine(),child.getChild(1).getCharPositionInLine());
                         }
                     } else {
                         if (isInAncestor(var)){
-                            if (!table.get(var).get(0).equals("param") && val > Integer.parseInt(getFromAncestor(var).get(3+i))){
+                            if (!isFromPointer&&!table.get(var).get(4).equals("-1") && val > Integer.parseInt(getFromAncestor(var).get(3+i))){
                                 throw new SemanticException("Index out of bounds ("+val+" > "+Integer.parseInt(getFromAncestor(var).get(3+i))+")" ,child.getChild(1).getLine(),child.getChild(1).getCharPositionInLine());
                             }
                         } else {
@@ -659,6 +669,7 @@ public class Scope {
         param.add(type.getName());
         param.add(String.valueOf(deplacement));
         param.add("false");
+        if (type.getName().startsWith("vec ")) param.add("-1");
         table.put(name,param);
         MiniRustCompiler.tds.getList().put(name,"param");
 

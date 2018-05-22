@@ -1,9 +1,9 @@
-fn test(v : &vec<i32>) -> i32 {
-    print!(*v[0]);
-    return *v[1]+5;
+fn test(v : &vec<i32>){
+    let d = *v;
+    print!(d[2]);
 }
 
 fn main(){
-    let w = vec![5,6,2];
-    print!(test(&w));
+    let w = vec![1,2,3];
+    test(&w);
 }
