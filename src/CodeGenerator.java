@@ -305,6 +305,10 @@ public class CodeGenerator{
      * @return Assembly code
      */
     private String generatePrint(BaseTree t){
+        return generatePrint(t, false);
+    }
+
+    private String generatePrint(BaseTree t, boolean raw){
         isPrint=true;
         String s = "";
         for (BaseTree t2 : (List<BaseTree>) t.getChildren()){
@@ -312,7 +316,8 @@ public class CodeGenerator{
                     "MPC WR \n\n" + "ADQ 6,WR\n\n" + // Calling the print subroutine
                     "JMP #print_-$-2\n\n";
         }
-        s += "LDW R5, #3\n\n" + // Adding automatically a \n at the end of the string (artificially)
+        if (!raw)
+            s += "LDW R5, #3\n\n" + // Adding automatically a \n at the end of the string (artificially)
                 "MPC WR \n\n" + "ADQ 6,WR\n\n" +
                 "JMP #print_-$-2\n\n";
         isPrint = false;
@@ -344,6 +349,9 @@ public class CodeGenerator{
         switch (t.getText()){
             case "print":
                 codeBuilder.append(generatePrint(t));
+                break;
+            case "raw_print":
+                codeBuilder.append(generatePrint(t,true));
                 break;
             case "input":
                 codeBuilder.append(generateInput((t)));
@@ -762,6 +770,9 @@ public class CodeGenerator{
         switch (t.getText()){
             case "print":
                 codeBuilder.append(generatePrint(t));
+                break;
+            case "raw_print":
+                codeBuilder.append(generatePrint(t,true));
                 break;
             case "input":
                 codeBuilder.append(generateInput(t));

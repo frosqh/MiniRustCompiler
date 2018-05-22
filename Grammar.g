@@ -107,11 +107,12 @@ atom : INT
 | BOOL
 |	 IDF^ ((callFun))?
 | block -> ^(ANOBLOCK block)
+|'input' '(' STRING ')' -> ^('input' STRING)
 | '('expr')'-> expr; 
 
 expr : 'vec' '!' '[' expr(',' expr)* ']' -> ^('vec' expr*)
 |'print' '!' '(' exS  (',' exS)* ')' -> ^('print' exS*)
-|'input' '(' STRING ')' -> ^('input' STRING)
+|'raw_print' '!' '(' exS (',' exS)* ')' -> ^('raw_print' exS*)
 |	binExpr1;
 
 exS : expr
@@ -147,13 +148,14 @@ bigunExpr : (UNAIRE^|EPERLU^)? bigdotExpr;
 bigExpr 
 :	'vec' '!' '[' expr (',' expr)*']' -> ^('vec' expr*)
 |   'print' '!' '(' exS (',' exS)* ')' -> ^('print' exS*)
-|'input' '(' STRING ')' -> ^('input' STRING)
+|'raw_print' '!' '(' exS (',' exS)* ')' -> ^('raw_print' exS*)
 |	bigbinExpr1;
 
 bigatom : INT
 | BOOL
 |	 IDF^ (newStruc|callFun)?
 | block -> ^(ANOBLOCK block)
+|'input' '(' STRING ')' -> ^('input' STRING)
 |'('bigExpr')' -> bigExpr;
 
 
