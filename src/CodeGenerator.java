@@ -444,7 +444,6 @@ public class CodeGenerator{
         if (t1.getText().equals("[")){
             array = getVecDepl(t1,level+1, s);
             d = array.get(0);
-            i = array.get(1);
             toAdd.addAll(array.subList(2,array.size()));
         } else {
             if (t1.getText().equals("UNISTAR")) t1 = (BaseTree) t1.getChild(0);
@@ -461,8 +460,8 @@ public class CodeGenerator{
         if (level!=0)
             dec = toAdd.get(level)+1;
         res.add(d);
-        res.add(i+dec*Integer.parseInt(t2.getText()));
-        res.addAll(toAdd);
+        res.add(i+dec*Integer.parseInt(t2.getText())); //genExpr(t2) + MUL #dec,R0,R0 + ADD R0,R9,R9
+        res.addAll(toAdd); //return d + levels
         return res;
     }
 
@@ -470,7 +469,8 @@ public class CodeGenerator{
         StringBuilder s = new StringBuilder();
         s.append("LDQ NIL, R9\n\n");
         ArrayList<Integer> array = getVecDepl(t,0, s);
-        int d = array.get(0);
+        //ADD (R0),R9,R1 + LDW R0,(R1) (garder les '(' et ')' autour de R0 ?)
+         int d = array.get(0);
         int index = array.get(1);
         s.append("LDW R0, (BP)"+d+"\n\n"+
                 "LDW R0,(R0)"+index*2+"\n\n");
