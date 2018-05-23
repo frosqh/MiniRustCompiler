@@ -2,6 +2,7 @@
 
 Projet de Compilation des langages réalisé par Sacha Lemonnier, Louise Pount, Gautier Raimondi et Maxime Riere
 
+
 ## Contrôles sémantiques réalisés
 
 Liste des contrôles réalisés : 
@@ -47,3 +48,12 @@ Liste des contrôles réalisés :
   - [X] [Warning] Prévient lors de la surcharge d'une variable par une autre d'un Scope parent
   - [X] [Warning] Prévient lors du "shadowing" d'une variable (variable déjà déclarée dans ce scope)
   - [X] [Warning] Regarde quelles fonctions n'ont pas de "return" 
+  - 
+  
+## Liste des instructions fonctionnelles
+
+  - [X]
+    - [X]
+    -   - [X]
+    -     - [X]
+    -       - [X]
