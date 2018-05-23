@@ -1,6 +1,6 @@
 fn fibonacci_computation(generations : i32, previous : i32, pprevious : i32) -> i32 
 {
-    if generations < 0
+    if (generations < 0)
     {
 
         return previous;
@@ -17,7 +17,7 @@ fn fibonacci(generations : i32) -> i32
  {
 
     let mut result =0;
-    if generations == 0 || generations == 1
+    if (generations == 0 || generations == 1)
     {
 
         result = generations;
@@ -27,7 +27,7 @@ fn fibonacci(generations : i32) -> i32
     else
     {
 
-        result = {fibonacci_computation(generations - 2, 1, 0)};
+        result = fibonacci_computation(generations - 2, 1, 0);
 
     }   
 }
