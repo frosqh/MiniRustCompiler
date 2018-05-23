@@ -459,11 +459,10 @@ public class CodeGenerator{
         if (level!=0)
             dec = toAdd.get(level)+1;
         res.add(d);
-        s.append(genExpr(t2) +"LDQ "+dec+",R1\n\n" +"MUL R1, R0, R0 \n\n" + "ADD R0,R9,R9\n\n");
+        s.append(genExpr(t2) +"LDQ "+2*dec+",R1\n\n" +"MUL R1, R0, R0 \n\n" + "ADD R0,R9,R9\n\n");
         //res.add(i+dec*Integer.parseInt(t2.getText())); //genExpr(t2) + MUL #dec,R0,R0 + ADD R0,R9,R9
         res.addAll(toAdd); //return d + levels
         sTemp += s.toString();
-        System.out.println(s.toString());
         return res;
     }
 
@@ -477,7 +476,7 @@ public class CodeGenerator{
          int d = array.get(0);
          System.out.println(d);
         s.append("LDW R0, (BP)"+d+"\n\n"+ //On charge l'addresse
-                "LDW R1, (R0)\n\n"+
+                "LDW R1, R0\n\n"+
                 " ADD R1, R9, R0 \n\n"+"LDW R0, (R0)\n\n");
         s.append(genR5(0));
         return s.toString();
