@@ -71,3 +71,4 @@ Liste des contrôles réalisés :
   - [X] definition de vec
   - [X] appel de vec
   - [X] affectation de vec
+  - [ ] gestion des structures
