@@ -52,8 +52,22 @@ Liste des contrôles réalisés :
   
 ## Liste des instructions fonctionnelles
 
-  - [X]
-    - [X]
-    -   - [X]
-    -     - [X]
-    -       - [X]
+  - [X] addition
+  - [X] soustraction
+  - [X] multiplication
+  - [X] division
+  - [X] négation
+  - [X] addresse
+  - [X] valeure d'une addresse
+  - [X] et logique
+  - [X] ou logique 
+  - [X] egal
+  - [X] different
+  - [X] definition de variable
+  - [X] appel de variable variable
+  - [X] affectation de variable
+  - [X] definition de fonction
+  - [X] appel de fonction
+  - [X] definition de vec
+  - [X] appel de vec
+  - [X] affectation de vec
