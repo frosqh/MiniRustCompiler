@@ -100,7 +100,7 @@ public class CodeGenerator{
         code += "WRITE_EXC EQU 66\n\n";
         code += "READ_EXC EQU 65\n\n";
         code += "STACK_ADRS EQU 0X1000\n\n";
-        code += "LOAD_ADRS EQU 0XF000\n\n";
+        code += "LOAD_ADRS EQU 0XB000\n\n";
         code += "NIL EQU 0\n\n";
         code += "SP EQU R15\n\n";
         code += "WR EQU R14\n\n";
@@ -207,9 +207,9 @@ public class CodeGenerator{
                 "    TRP #WRITE_EXC\n"+
                 "    TRP #READ_EXC\n" +
                 "    LDW R2, #0x0000\n"+
-                "    LDW R0, (R2)\n" +
-                "    LDW R1, #0x3000\n" +
-                "    SUB R0,R1,R0\n" +
+                "    LDW R0, (R2)\n" + // R0 = code ASCII du chiffre (0x3000 -> 0x3900)
+                "    LDW R1, #0x3000\n" + //'0'
+                "    SUB R0,R1,R0\n" + //0X0500 -> 5
                 "    LDW R1, #256\n" +
                 "    DIV R0,R1,R1\n" +
                 "    LDW R0,R1\n"+
@@ -424,61 +424,46 @@ public class CodeGenerator{
     private String generateVec1(BaseTree t) {
         StringBuilder codeBuilder = new StringBuilder();
         codeBuilder.append("STW HP, -(SP)\n\n");
+        codeBuilder.append("LDW R3, HP\n\n");
+        codeBuilder.append("ADQ "+t.getChildCount()*2+", HP \n\n");
         for (BaseTree t2 : (List<BaseTree>) t.getChildren()){
+            if (t2.getText().equals("vec"))codeBuilder.append("STW R3, -(SP)\n\n");
             codeBuilder.append(genExpr(t2));
-            if (!t2.getText().equals("vec"))
-                codeBuilder.append("STW R0, (HP)+\n\n");
+            if (t2.getText().equals("vec")) codeBuilder.append("LDW R3, (SP)+\n\n");
+            codeBuilder.append("STW R0, (R3)+\n\n");
         }
         codeBuilder.append("LDW R0, (SP)+\n\n");
         return codeBuilder.toString();
     }
 
-    private ArrayList<Integer> getVecDepl(BaseTree t, int level, StringBuilder s){
+    private int getVecDepl(BaseTree t, StringBuilder s, int val){ //R8 = adresse R9 = index
         int d;
-        int dec=1;
-        ArrayList<Integer> toAdd = new ArrayList<>();
-        ArrayList<Integer> res = new ArrayList<>();
-        ArrayList<Integer> array;
         BaseTree t1 = (BaseTree) t.getChild(0);
         BaseTree t2 = (BaseTree) t.getChild(1);
         if (t1.getText().equals("[")){
-            array = getVecDepl(t1,level+1, s);
-            d = array.get(0);
-            toAdd.addAll(array.subList(2,array.size()));
+            val = getVecDepl(t1, s, val);
+            s.append("ADD R9,R8,R8\n\n");
         } else {
             if (t1.getText().equals("UNISTAR")) t1 = (BaseTree) t1.getChild(0);
             d = getDeplacement(t1.getText());
-            try {
-                ArrayList<String> a = sc.find(t1.getText());
-                for (String s2 : a.subList(4,a.size())){
-                    toAdd.add(Integer.parseInt(s2)); //We get size
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            s.append("LDW R8, (BP)"+d+"\n\n");
         }
-        if (level!=0)
-            dec = toAdd.get(level)+1;
-        res.add(d);
-        s.append(genExpr(t2) +"LDQ "+2*dec+",R1\n\n" +"MUL R1, R0, R0 \n\n" + "ADD R0,R9,R9\n\n");
-        //res.add(i+dec*Integer.parseInt(t2.getText())); //genExpr(t2) + MUL #dec,R0,R0 + ADD R0,R9,R9
-        res.addAll(toAdd); //return d + levels
-        sTemp += s.toString();
-        return res;
+        s.append(genExpr(t2));
+        s.append("LDQ 2, R6\n\n");
+        s.append("MUL R6,R0,R9\n\n");
+        System.out.println(val);
+        return val+1;
+        //s.append("LDW R9, R0\n\n");
     }
 
     private String callVec(BaseTree t) {
         StringBuilder s = new StringBuilder();
         s.append("LDQ NIL, R9\n\n");
-        sTemp = "";
-        
-        ArrayList<Integer> array = getVecDepl(t,0, s);
-        //ADD (R0),R9,R1 + LDW R0,(R1) (garder les '(' et ')' autour de R0 ?)s
-         int d = array.get(0);
-         System.out.println(d);
-        s.append("LDW R0, (BP)"+d+"\n\n"+ //On charge l'addresse
-                "LDW R1, R0\n\n"+
-                " ADD R1, R9, R0 \n\n"+"LDW R0, (R0)\n\n");
+        int v = getVecDepl(t,s,0);
+        s.append("ADD R8, R9, R0\n\n");
+        for (int i = 0 ; i<v; i++){
+            s.append("LDW R0, (R0)\n\n");
+        }
         s.append(genR5(0));
         return s.toString();
     }
@@ -1007,13 +992,8 @@ public class CodeGenerator{
         if (t1.getText().equals("[")){
             codeBuilder.append("STW R0, -(SP)\n\n");
             codeBuilder.append("LDQ NIL, R9 \n\n");
-            ArrayList<Integer> array = getVecDepl((BaseTree) t1, 0, codeBuilder);
-            d = array.get(0);
-            codeBuilder.append("LDW R1, (BP)"+d+"\n\n");
-            //Mettre dans R1 le R1 plus décalage dans R9;
-            codeBuilder.append("LDW R2, R1\n\n"+
-                    "TRP R2\n"+
-                    " ADD R2, R9, R1 \n\n");
+            getVecDepl((BaseTree) t1, codeBuilder, 0);
+            codeBuilder.append("ADD R8, R9, R1\n\n");
             codeBuilder.append("LDW R0, (SP)+\n\n");
             codeBuilder.append("STW R0, (R1)\n\n");
         } else {
