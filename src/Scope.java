@@ -369,6 +369,8 @@ public class Scope {
                     if (child.getChild(1).getText().matches("[a-z][a-zA-Z0-9]*")){
                         return new Type(varType.getName().split(" ",i+1)[i]);
                     }
+                    if (child.getChild(1).getText().matches("[+]|[-]|[/]|[*]"))
+                        return valType;
                     int val = Integer.parseInt(child.getChild(1).getText());
                     boolean isFromPointer = false;
                     if (var.equals("UNISTAR")){
