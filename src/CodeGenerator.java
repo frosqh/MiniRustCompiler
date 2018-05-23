@@ -10,6 +10,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Effectively compile the miniRust code to assembly
@@ -798,9 +799,16 @@ public class CodeGenerator{
                 } catch (SemanticException e) {
                     e.printStackTrace();
                 }
-                String n = sc.getName();
+                Stack<String> nameStack = new Stack();
+                while (!sc.getOrigin().equals("function")){
+                    nameStack.push(sc.getName());
+                    codeBuilder.append(goBack(sc.getName(),true));
+                }
+                nameStack.push(sc.getName());
                 codeBuilder.append(goBack(sc.getName(),true));
-                ChangeScope(n);
+                while (!nameStack.empty()) {
+                    ChangeScope(nameStack.pop());
+                }
                 codeBuilder.append("LDW WR, (SP)+\n\n");
                 codeBuilder.append("JEA (WR)\n\n");
                 break;
