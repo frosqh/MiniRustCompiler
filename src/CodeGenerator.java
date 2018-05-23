@@ -83,6 +83,7 @@ public class CodeGenerator{
      * @see #generatePrint(BaseTree)
      */
     private int scounter = 0;
+    private String sTemp;
 
 
     /**
@@ -461,16 +462,20 @@ public class CodeGenerator{
         s.append(genExpr(t2) +"LDQ "+dec+",R1\n\n" +"MUL R1, R0, R0 \n\n" + "ADD R0,R9,R9\n\n");
         //res.add(i+dec*Integer.parseInt(t2.getText())); //genExpr(t2) + MUL #dec,R0,R0 + ADD R0,R9,R9
         res.addAll(toAdd); //return d + levels
+        sTemp += s.toString();
+        System.out.println(s.toString());
         return res;
     }
 
     private String callVec(BaseTree t) {
         StringBuilder s = new StringBuilder();
         s.append("LDQ NIL, R9\n\n");
+        sTemp = "";
+        
         ArrayList<Integer> array = getVecDepl(t,0, s);
         //ADD (R0),R9,R1 + LDW R0,(R1) (garder les '(' et ')' autour de R0 ?)s
          int d = array.get(0);
-        int index = array.get(1);
+         System.out.println(d);
         s.append("LDW R0, (BP)"+d+"\n\n"+ //On charge l'addresse
                 "LDW R1, (R0)\n\n"+
                 " ADD R1, R9, R0 \n\n"+"LDW R0, (R0)\n\n");
@@ -552,7 +557,6 @@ public class CodeGenerator{
                 scounter++;
                 return "STR"+scounter+" string "+s+"\n\n"+genR5(2)+"LDW R0, #STR"+scounter+"\n\n";
             }
-            System.out.println(s);
             return "LDW R0, (BP)"+getDeplacement(s)+"\n\n"+genR5(getType(s));
         }
     }
@@ -781,7 +785,6 @@ public class CodeGenerator{
                 break;
             case "return":
                 codeBuilder.append(genExpr((BaseTree) t.getChild(0)));
-                codeBuilder.append(goBack(sc.getName(),true));
                 try {
                     Scope sc2 = sc;
                     while (!sc2.getOrigin().equals("function")){
@@ -796,9 +799,11 @@ public class CodeGenerator{
                 } catch (SemanticException e) {
                     e.printStackTrace();
                 }
+                String n = sc.getName();
+                codeBuilder.append(goBack(sc.getName(),true));
+                ChangeScope(n);
                 codeBuilder.append("LDW WR, (SP)+\n\n");
                 codeBuilder.append("JEA (WR)\n\n");
-
                 break;
             default:
                 codeBuilder.append(genExpr((BaseTree) t));
@@ -999,7 +1004,9 @@ public class CodeGenerator{
             d = array.get(0);
             codeBuilder.append("LDW R1, (BP)"+d+"\n\n");
             //Mettre dans R1 le R1 plus décalage dans R9;
-            codeBuilder.append("ADD (R1), R9, R1 \n\n");
+            codeBuilder.append("LDW R2, R1\n\n"+
+                    "TRP R2\n"+
+                    " ADD R2, R9, R1 \n\n");
             codeBuilder.append("LDW R0, (SP)+\n\n");
             codeBuilder.append("STW R0, (R1)\n\n");
         } else {
